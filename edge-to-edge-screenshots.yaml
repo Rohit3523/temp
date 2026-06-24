@@ -1,0 +1,311 @@
+appId: chat.rocket.android
+---
+
+# ── Cold start ──────────────────────────────────────────────────
+- setPermissions:
+    permissions:
+      all: allow
+- launchApp:
+    clearState: true
+
+# ── Add workspace ───────────────────────────────────────────────
+- extendedWaitUntil:
+    visible:
+      id: new-server-view-input
+    timeout: 15000
+- tapOn:
+    id: new-server-view-input
+- inputText: "https://mobile.qa.rocket.chat"
+- extendedWaitUntil:
+    visible:
+      id: new-server-view-button
+    timeout: 10000
+- tapOn:
+    id: new-server-view-button
+- extendedWaitUntil:
+    visible:
+      id: workspace-view-register
+    timeout: 30000
+
+# ── 02: Register Screen ─────────────────────────────────────────
+- tapOn:
+    id: workspace-view-register
+- takeScreenshot: "02_register"
+- back
+
+# ── 01: Login Screen ────────────────────────────────────────────
+- tapOn: "Login"
+- takeScreenshot: "01_login"
+
+# ── Authenticate ────────────────────────────────────────────────
+- tapOn:
+    id: login-view-email
+- inputText: "edgetest"
+- tapOn:
+    id: login-view-password
+- inputText: "EdgeTest@123"
+- hideKeyboard
+- tapOn:
+    id: login-view-submit
+- extendedWaitUntil:
+    visible:
+      id: rooms-list-view
+    timeout: 30000
+
+# ── 03: Rooms List ──────────────────────────────────────────────
+- takeScreenshot: "03_rooms-list"
+
+# ── 04: Select Server ───────────────────────────────────────────
+- tapOn:
+    id: rooms-list-header-servers-list-button
+- takeScreenshot: "04_select-server"
+- swipe:
+    direction: DOWN
+    duration: 400
+
+# ── 13: New Message View ────────────────────────────────────────
+- tapOn:
+    id: rooms-list-view-create-channel
+- takeScreenshot: "13_new-message-view"
+- back
+
+# ── 14: Directory ───────────────────────────────────────────────
+- tapOn:
+    id: rooms-list-view-directory
+- takeScreenshot: "14_directory"
+- back
+
+# ════════════ IN edge-to-edge-channel ═══════════════════════════
+- tapOn:
+    id: rooms-list-view-item-edge-to-edge-channel
+
+# ── 05: Room View — default ─────────────────────────────────────
+- takeScreenshot: "05_room-view-default"
+
+# ── 06: Room View — keyboard open ───────────────────────────────
+- tapOn:
+    id: message-composer-input
+- takeScreenshot: "06_room-keyboard"
+
+# ── 07: Room View — emoji keyboard ──────────────────────────────
+- tapOn:
+    id: message-composer-open-emoji
+- takeScreenshot: "07_room-emoji-keyboard"
+
+# ── 23: Emoji picker — scroll until 🤰 visible ──────────────────
+- tapOn:
+    id: emoji-picker-tab-emoji
+- evalScript: ${output.foundElement = 0}
+- repeat:
+    while:
+      true: ${output.foundElement == 0}
+    commands:
+      - swipe:
+          start: "50%, 85%"
+          end: "50%, 50%"
+          duration: 100
+      - runFlow:
+          when:
+            visible:
+              text: "🤰"
+          commands:
+            - evalScript: ${output.foundElement = 1}
+- takeScreenshot: "23_emoji-picker-bottom"
+
+# ── 27: Emoji keyboard — scroll until 🤰 visible (re-confirm) ───
+- evalScript: ${output.foundElement = 0}
+- repeat:
+    while:
+      true: ${output.foundElement == 0}
+    commands:
+      - swipe:
+          start: "50%, 85%"
+          end: "50%, 50%"
+          duration: 100
+      - runFlow:
+          when:
+            visible:
+              text: "🤰"
+          commands:
+            - evalScript: ${output.foundElement = 1}
+- takeScreenshot: "27_emoji-keyboard-absolute-bottom"
+- tapOn:
+    id: message-composer-close-emoji
+
+# ── 09: Compose "+" menu ────────────────────────────────────────
+- tapOn:
+    id: message-composer-actions
+- takeScreenshot: "09_room-compose-plus"
+- back
+
+# ── Send test message (required for action sheet screenshots) ────
+- tapOn:
+    id: message-composer-input
+- inputText: "test message edge-to-edge"
+- tapOn:
+    id: message-composer-send
+
+# ── 08: Room View — action sheet ────────────────────────────────
+- longPressOn:
+    text: "test message edge-to-edge"
+- takeScreenshot: "08_room-action-sheet"
+
+# ── 21: Action sheet — scroll to end (Delete visible) ───────────
+- scroll
+- scroll
+- scroll
+- scroll
+- takeScreenshot: "21_action-sheet-delete"
+
+# ── Skip reaction picker (28/29) — unreliable across Android versions ──
+- back                       # dismiss action sheet
+- back                       # back to rooms list
+
+# Re-enter room for thread + search screenshots
+- tapOn:
+    id: rooms-list-view-item-edge-to-edge-channel
+
+# ── 10: Thread Messages ─────────────────────────────────────────
+- scrollUntilVisible:
+    element:
+      text: "test message edge-to-edge"
+    direction: DOWN
+    timeout: 30000
+    speed: 60
+    visibilityPercentage: 50
+- longPressOn:
+    text: "test message edge-to-edge"
+- tapOn:
+    id: message-actions-reply-in-thread
+- takeScreenshot: "10_thread-messages"
+- back
+
+# ── Open room actions (members + auto-translate) ────────────────
+- tapOn:
+    id: room-header
+
+# ── 12: Room Members ────────────────────────────────────────────
+- tapOn:
+    id: room-actions-members
+- takeScreenshot: "12_room-members"
+
+# ── 24: Members — filter open ───────────────────────────────────
+- tapOn:
+    id: room-members-view-filter
+- takeScreenshot: "24_members-filter"
+- back          # filter → members
+- back          # members → room actions
+- back          # room actions → room
+
+# ── 20: Auto Translate ──────────────────────────────────────────
+- tapOn:
+    id: room-header
+- tapOn:
+    id: room-actions-auto-translate
+- takeScreenshot: "20_auto-translate"
+- back          # auto-translate → room actions
+- back          # room actions → room
+
+# ── 11: Search Messages ─────────────────────────────────────────
+- tapOn:
+    id: room-view-search
+- tapOn:
+    id: search-message-view-input
+- inputText: "test"
+- takeScreenshot: "11_search-messages"
+- hideKeyboard  # close keyboard so back navigates, not just dismisses keyboard
+- back          # search → room
+- back          # room → rooms list
+- extendedWaitUntil:
+    visible:
+      id: rooms-list-view
+    timeout: 10000
+
+# ════════════ IN general (read-only) ════════════════════════════
+- tapOn:
+    id: rooms-list-view-item-general
+- takeScreenshot: "16_read-only-room"
+- back
+
+# ════════════ IN edge-to-edge-discussion ════════════════════════
+- tapOn:
+    id: rooms-list-view-item-edge-to-edge-discussion
+- takeScreenshot: "15_discussions"
+- back
+
+# ════════════ SIDEBAR FLOWS ═════════════════════════════════════
+
+# ── Open sidebar ────────────────────────────────────────────────
+- tapOn:
+    id: rooms-list-view-sidebar
+
+# ── 17: Status View ─────────────────────────────────────────────
+- tapOn:
+    id: "sidebar-custom-status-.*"
+- takeScreenshot: "17_status-view"
+- back
+
+# Close drawer if still open, then reopen cleanly
+- runFlow:
+    when:
+      visible:
+        id: sidebar-close-drawer
+    commands:
+      - tapOn:
+          id: sidebar-close-drawer
+- tapOn:
+    id: rooms-list-view-sidebar
+- extendedWaitUntil:
+    visible:
+      id: sidebar-profile
+    timeout: 5000
+
+# ── 25: Profile — scrolled down ─────────────────────────────────
+- tapOn:
+    id: sidebar-profile
+- scrollUntilVisible:
+    element:
+      id: profile-view-submit
+    direction: DOWN
+- takeScreenshot: "25_profile-scrolled"
+- back
+
+# Close drawer if still open, then reopen cleanly
+- runFlow:
+    when:
+      visible:
+        id: sidebar-close-drawer
+    commands:
+      - tapOn:
+          id: sidebar-close-drawer
+- tapOn:
+    id: rooms-list-view-sidebar
+- extendedWaitUntil:
+    visible:
+      id: sidebar-settings
+    timeout: 5000
+
+# ── Enter Settings ──────────────────────────────────────────────
+- tapOn:
+    id: sidebar-settings
+
+# ── 18: Language View ───────────────────────────────────────────
+- tapOn:
+    id: settings-view-language
+- takeScreenshot: "18_language"
+- back
+
+# ── 19: Default Browser ─────────────────────────────────────────
+- tapOn:
+    id: settings-view-default-browser
+- takeScreenshot: "19_default-browser"
+- back
+
+# ── 22: Media Auto-Download — Images ────────────────────────────
+- tapOn:
+    id: settings-view-media-auto-download
+- tapOn:
+    text: "Image"
+- takeScreenshot: "22_media-download-images"
+- back
+- back
